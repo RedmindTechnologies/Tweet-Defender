@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Trigger Tweet Response</title>
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script type="text/javascript" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css"></link>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 80%;
+  margin-top: 90px;
+  margin-left: 150px;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+
+body {   font-family: "Lato", sans-serif;
+   background:#94b8f1;}
+
+  .sidenav {
+  height: 80%;
+  width: 0;
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color:#0ad;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+}
+
+.sidenav a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #ece8e8;
+  display: block;
+  transition: 0.3s;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.sidenav .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+.dropdown-container {
+  display: none;
+  background-color:transparent;
+  padding-left: 8px;
+  transform: initial;
+}
+.dropdown-container:hover{
+	 color: #f1f1f1;
+}
+/* Optional: Style the caret down icon */
+.fa-caret-down {
+  float: right;
+
+  padding-right: 8px;
+}
+.fa-caret-down:active{
+	transform: translateY(90deg);
+}
+/* Style the sidenav links and the dropdown button */
+.dropdown-btn {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 17px;
+  color: #fff;
+  display: block;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  text-transform: capitalize;
+}
+
+/* On mouse-over */
+.sidenav a:hover {
+  color: black;
+}
+.active {
+  background-color: rgb(19, 176, 204);
+  color: white;
+}
+ .dropdown2{
+        width:38rem;
+    }
+    .dropdown:hover .dropdown-list{
+        opacity: 1;
+        visibility: visible;
+    }
+    .dropdown2-select
+    {
+        padding: 0 1rem;
+        border-radius:4px;
+        background-color:transparent;
+        width: 100%;
+        color:#fff;
+        display: flex;
+        align-items: center;
+        justify-self: space-between;
+        font-size:18px;
+        cursor: pointer;
+    }
+    .dropdown-list{
+        border-radius: 4px;
+        background-color: transparent;
+        position: absolute;
+        opacity: 1;
+        margin-left:15px;
+        cursor: pointer;
+        visibility: visible;
+        width:250px;
+        z-index: auto;
+        color:#fff;
+
+        transition:opacity 0.2s linear,visibility 0.2s linear;
+
+    }
+    .dropdown-list_item{
+        padding: 0.5rem;
+        font-size:15px;
+        cursor: pointer;
+
+    }
+    .dropdown-list.active{
+      display: block;
+    }
+    .select2{
+      margin-right: 25px;
+    }
+</style>
+    </head>
+    <body>
+      <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()"><span
+            style="font-size: 25px;margin-right: 60px;">Menu</span>&times;</a>
+        <button class="dropdown-btn" onclick="homepage()"><i class="fa fa-home" aria-hidden="true"
+            style="margin-right: 10px;"></i>Dashboard </button>
+        <button class="dropdown-btn" onclick="handleclick()"><i class="fa fa-comments" aria-hidden="true"
+            style="margin-right: 5px;"></i>Trigger Tweet Response</button>
+        <button class="dropdown-btn" onclick="TwitDefender()"><i class="fa fa-comments" aria-hidden="true"
+            style="margin-right: 5px;"></i>Create Twitter Response</button>
+        <div class="dropdown2">
+          <div class="dropdown2-select" onclick="onClick()">
+            <span class="select2">
+              Reports
+            </span>
+            <i class="fa fa-caret-down"></i>
+
+          </div>
+          <div class="dropdown-list" style="display: none;" id="dropdown">
+            <div class="dropdown-list_item"><i class="fa fa-comments" aria-hidden="true"
+                style="margin-right: 5px;"></i>GeoLocation Report</div>
+            <div class="dropdown-list_item" onclick="Dailytweet()"><i class="fa fa-comments" aria-hidden="true"
+                style="margin-right: 5px;"></i>Daily Tweet response</div>
+            <div class="dropdown-list_item" onclick="activehashtag()"><i class="fa fa-comments" aria-hidden="true"
+                style="margin-right: 5px;"></i>Active Hash tags</div>
+          </div>
+
+        </div>
+
+      </div>
+
+
+                <span style="cursor:pointer;" onclick="openNav()"><svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+                  width="48" height="48"
+                  viewBox="0 0 172 172"
+                  style=" fill:#000000;"><defs><linearGradient x1="43.2365" y1="0.2365" x2="125.02608" y2="82.02608" gradientUnits="userSpaceOnUse" id="color-1_MmupZtPbnw66_gr1"><stop offset="0.237" stop-color="#e74c3c"></stop><stop offset="0.85" stop-color="#333333"></stop></linearGradient><linearGradient x1="43.2365" y1="43.2365" x2="125.02608" y2="125.02608" gradientUnits="userSpaceOnUse" id="color-2_MmupZtPbnw66_gr2"><stop offset="0.237" stop-color="#e74c3c"></stop><stop offset="0.85" stop-color="#333333"></stop></linearGradient><linearGradient x1="43.2365" y1="86.2365" x2="125.02608" y2="168.02608" gradientUnits="userSpaceOnUse" id="color-3_MmupZtPbnw66_gr3"><stop offset="0.237" stop-color="#e74c3c"></stop><stop offset="0.85" stop-color="#333333"></stop></linearGradient></defs><g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><path d="M0,172v-172h172v172z" fill="none"></path><g><path d="M154.08333,53.75h-136.16667c-3.94167,0 -7.16667,-3.225 -7.16667,-7.16667v-7.16667c0,-3.94167 3.225,-7.16667 7.16667,-7.16667h136.16667c3.94167,0 7.16667,3.225 7.16667,7.16667v7.16667c0,3.94167 -3.225,7.16667 -7.16667,7.16667z" fill="url(#color-1_MmupZtPbnw66_gr1)"></path><path d="M154.08333,96.75h-136.16667c-3.94167,0 -7.16667,-3.225 -7.16667,-7.16667v-7.16667c0,-3.94167 3.225,-7.16667 7.16667,-7.16667h136.16667c3.94167,0 7.16667,3.225 7.16667,7.16667v7.16667c0,3.94167 -3.225,7.16667 -7.16667,7.16667z" fill="url(#color-2_MmupZtPbnw66_gr2)"></path><path d="M154.08333,139.75h-136.16667c-3.94167,0 -7.16667,-3.225 -7.16667,-7.16667v-7.16667c0,-3.94167 3.225,-7.16667 7.16667,-7.16667h136.16667c3.94167,0 7.16667,3.225 7.16667,7.16667v7.16667c0,3.94167 -3.225,7.16667 -7.16667,7.16667z" fill="url(#color-3_MmupZtPbnw66_gr3)"></path></g></g></svg></span>
+                    <script type="text/javascript">
+                        function handleclick(){
+
+                            window.location.href="Table.html";
+
+                        }
+                        function homepage(){
+                          window.location.href="index.html";
+                        }
+                        function TwitDefender()
+                        {
+                           window.location.href = "TwitDefender.html";
+                        }
+                        function Dailytweet() {
+                          window.location.href = "Dailyresponse.html";
+                        }
+                        function activehashtag() {
+                          window.location.href = "Activehastags.html";
+                        }
+                          function onClick() {
+                              var drop = document.getElementById("dropdown");
+                              if (drop.style.display === 'none')
+                                document.getElementById("dropdown").style.display = "block";
+                              else
+                                document.getElementById("dropdown").style.display = "none";
+
+                            }
+                    </script>
+
+                <script>
+                    /* Loop through all dropdown buttons to toggle between hiding and showing its dropdown content - This allows the user to have multiple dropdowns without any conflict */
+                    var dropdown = document.getElementsByClassName("dropdown-btn");
+                    var i;
+
+                    for (i = 0; i < dropdown.length; i++) {
+                      dropdown[i].addEventListener("click", function() {
+                      this.classList.toggle("active");
+                      var dropdownContent = this.nextElementSibling;
+                      if (dropdownContent.style.display === "block") {
+                      dropdownContent.style.display = "none";
+                      } else {
+                      dropdownContent.style.display = "block";
+                      }
+                      });
+                    }
+                    </script>
+
+        <script>
+        function openNav() {
+          document.getElementById("mySidenav").style.width = "250px";
+        }
+
+        function closeNav() {
+          document.getElementById("mySidenav").style.width = "0";
+        }
+        </script>
+
+
+
+        <script>
+
+            function runPyScript(){
+            var jqXHR = $.ajax({
+            type: "GET",
+            url: "http://127.0.0.1:5000/my-link/",
+            async: false,
+            crossDomain:true,
+            dataType: "jsonp",
+            headers: {  'Access-Control-Allow-Origin': '*' },
+            //contentType: "application/json; charset=utf-8",
+            success: function(response) {
+                //alert("Success");
+               var val = "<table id='table1' class='display' style='width:100%' >"+
+            "<thead><tr>" +
+              "<th>Hashtags</th>" +
+              "<th>Messages</th>" +
+              "<th>Type</th>" +
+              "<th>Status</th>" +
+              "<th>Created at</th>" +
+              "<th>Send Response</th>" +
+              "<th>Edit Response</th>" +
+              "<th>Delete Response</th>" +
+            "</tr></thead>";
+                console.log(response);
+                $(response).each(function (index, item) {
+                    //console.log(index,item[0]);
+                    var id="'"+item[0]+"'"
+                    var button ="<td><button type=submit id=b1 onclick=sendresp()> Send response</button></td>";
+                    var button1 ="<td><button type=submit id=b2 onclick=editresp("+id+")> Edit Response</button></td>";
+                    var button2 ="<td><button type=submit id=b3 onclick=deleteresp("+id+")> Delete Response</button></td></tr>";
+                    val+= "<tbody><tr id ="+index+"><td class=row-data >"+item[1]+"</td>" +
+                      "<td class=row-data >"+item[2]+"</td>" +
+                      "<td class=row-data >"+item[5]+"</td>" +
+                      "<td class=row-data >"+item[3]+"</td>" +
+                    "<td class=row-data >"+item[4]+"</td>"+button+button1+button2+"</tbody>";
+                });
+                val+="<tfoot><tr>" +
+              "<th>Hashtags</th>" +
+              "<th>Messages</th>" +
+              "<th>Type</th>" +
+              "<th>Status</th>" +
+              "<th>Created at</th>" +
+              "<th>Send Response</th>" +
+              "<th>Edit Response</th>" +
+              "<th>Delete Response</th>" +
+            "</tr></tfoot></table>";
+            $("#table").append(val);
+                      $(document).ready(function() {
+                        $('#table1').DataTable();
+                        });},
+
+            error: function(xhr, ajaxOptions, thrownError){
+
+                  alert('Something went wrong.Contact Admin');
+                console.log('error');
+                }
+              });
+
+    return jqXHR.responseText;
+}
+//Sending Response
+function sendresp() {
+                var rowId = event.target.parentNode.parentNode.id;
+
+                var data = document.getElementById(rowId).querySelectorAll(".row-data");
+                var hash = data[0].innerHTML;
+                var msg = data[1].innerHTML;
+                send(hash,msg)
+                //alert("hash: " + hash + "msg: " + msg);
+            }
+            function editresp(id) {
+                var rowId = event.target.parentNode.parentNode.id;
+
+                var data =document.getElementById(rowId).querySelectorAll(".row-data");
+
+                var hash = data[0].innerHTML;
+                var msg = data[1].innerHTML;
+                var tag = data[2].innerHTML;
+
+                //edit(hash,msg,id)
+                window.location.href = "TwitDefender.html?hashtag="+hash+"&msg="+msg+"&id="+id+"&tag="+tag;
+
+            }
+            function deleteresp(id) {
+                var rowId = event.target.parentNode.parentNode.id;
+                var data = document.getElementById(rowId).querySelectorAll(".row-data");
+                //alert("id: " + id );
+                deletefn(id)
+
+
+            }
+// do something with the response
+    response= runPyScript();
+        </script>
+        <script>
+            function send(tag,msg){
+
+                alert("Tweet Bot is Replying to Tweets, Please Check Tweet Response Report after 5 minutes");
+                var url='http://127.0.0.1:5000/tweet?hashtag='+tag+'&msg='+msg;
+                //alert(url);
+            $.ajax({
+            type: "POST",
+            url:url ,
+            async: false,
+            crossDomain:true,
+            dataType: "jsonp",
+            //jsonpCallback: "jsonCallback",
+            headers: {  'Access-Control-Allow-Origin': '*' },
+            contentType: "application/json; charset=utf-8",
+            success: function(response) {
+                alert("Success");
+            },
+            error: function(xhr, ajaxOptions, thrownError){
+			  //alert(JSON.parse(response.d));
+			  //alert(xhr.status);
+			  //alert(thrownError);
+			  alert('Reply already Done');
+			console.log('error');
+
+            }
+        });
+            }
+            function edit(tag,msg,id){
+                //alert(item1);
+                alert("Tweet Bot is Replying to Tweets, Please Check Tweet Response Report after 5 minutes");
+                var url='http://127.0.0.1:5000/edit?hashtag='+tag+'&msg='+msg+'&id='+id;
+                //alert(url);
+            $.ajax({
+            type: "POST",
+            url:url ,
+            async: false,
+            crossDomain:true,
+            dataType: "jsonp",
+            //jsonpCallback: "jsonCallback",
+            headers: {  'Access-Control-Allow-Origin': '*' },
+            contentType: "application/json; charset=utf-8",
+            success: function(response) {
+                alert("Success");
+            },
+            error: function(xhr, ajaxOptions, thrownError){
+			  //alert(JSON.parse(response.d));
+			  //alert(xhr.status);
+			  //alert(thrownError);
+			  alert('Reply already Done');
+			console.log('error');
+
+            }
+        });
+            }
+            function deletefn(id){
+                //alert(item1);
+               // alert("Tweet Bot is Replying to Tweets, Please Check Tweet Response Report after 5 minutes");
+                var url='http://127.0.0.1:5000/delete?id='+id;
+                //alert(url);
+            $.ajax({
+            type: "POST",
+            url:url ,
+            async: false,
+            crossDomain:true,
+            dataType: "jsonp",
+            //jsonpCallback: "jsonCallback",
+            headers: {  'Access-Control-Allow-Origin': '*' },
+            contentType: "application/json; charset=utf-8",
+            success: function(response) {
+                alert("Deleted Success");
+            },
+            error: function(xhr, ajaxOptions, thrownError){
+			  //alert(JSON.parse(response.d));
+			  //alert(xhr.status);
+			  //alert(thrownError);
+			  alert('Reply already Done');
+			console.log('error');
+
+            }
+        });
+            }
+
+        </script>
+<div>
+        <div>
+          <h2 style="color: #fff;margin-left: 450px;text-decoration: underline;">Trigger Tweet Response Bot</h2>
+        </div>
+        <div id="table" style="margin-top: -2%;">
+
+        </div></div>
+
+    </body>
+</html>
