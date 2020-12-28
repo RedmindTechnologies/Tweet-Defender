@@ -82,4 +82,3 @@ Werkzeug==1.0.1
 widgetsnbextension==3.5.1
 xlrd==1.2.0
 zipp==3.1.0
-python==3.8.1
