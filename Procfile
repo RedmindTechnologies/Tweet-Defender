@@ -1,2 +1,2 @@
-web: gunicorn Dbconnection.py:app
+web: python Dbconnection.py
 
