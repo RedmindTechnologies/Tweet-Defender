@@ -66,7 +66,7 @@ def saveandtrigger():
         hastagvalue=(request.args.get('hashtag'))
         Replyvalue=(request.args.get('msg'))
         tag=(request.args.get('tag'))
-        if(hastagvalue!="" and Replyvalue!="" ):
+        if(len(hastagvalue)!=0 and len(Replyvalue)!=0 and len(tag)!=0 ):
             db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
             print("Connected to:", db_connection.get_server_info())
             mycursor = db_connection.cursor()
@@ -101,7 +101,7 @@ def insert():
         hastagvalue=(request.args.get('hashtag'))
         Replyvalue=(request.args.get('msg'))
         tag=(request.args.get('tag'))
-        if(hastagvalue!="" and Replyvalue!="" ):
+        if(len(hastagvalue)!=0 and len(Replyvalue)!=0 and len(tag)!=0 ):
             db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
             print("Connected to:", db_connection.get_server_info())
             mycursor = db_connection.cursor()
@@ -159,7 +159,7 @@ def dailytweet():
             print('Joined=',tweet.user.created_at)
             print('Tweeted at',tweet.created_at)
             print('Tweet Text',tweet.full_text)
-            q.append({'Name':str(tweet.user.name),'Nameid':str(tweet.user.screen_name),'Followers':str(a), 'Location':str(tweet.user.location),'description':(tweet.user.description).encode("utf-8", errors="ignore"),'tweetcount':str(tweet.user.statuses_count),'Verifiedaccount':str(tweet.user.verified),'Tweetedat':str(tweet.created_at),'TweetText':str(tweet.full_text)})
+            q.append({'Name':str(tweet.user.name),'Nameid':str(tweet.user.screen_name),'Followers':str(a), 'Location':str(tweet.user.location),'description':str(tweet.user.description),'tweetcount':str(tweet.user.statuses_count),'Verifiedaccount':str(tweet.user.verified),'Tweetedat':str(tweet.created_at),'TweetText':str(tweet.full_text)})
             #api.update_status("my update", in_reply_to_status_id = 1341420608437977088)
             #api.update_status(status = 'my tweety', in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
             #sleep(45)
@@ -186,7 +186,7 @@ def editsave():
         tag=(request.args.get('tag'))
         id=(request.args.get('id'))
 
-        if(hastagvalue!="" and Replyvalue!="" and tag!="" and id!=""):
+        if(len(hastagvalue)!=0 and len(Replyvalue)!=0 and len(tag)!=0 and len(id)!=0 ):
             db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
             print("Connected to:", db_connection.get_server_info())
             mycursor = db_connection.cursor()
@@ -208,6 +208,44 @@ def editsave():
         print("SQLSTATE", err.sqlstate)
         print("Message", err.msg)
         return jsonpify(err)
+
+@app.route("/editandtrigger", methods=['GET', 'POST'])
+def editsaveandtrigger():
+    try:
+        hastagvalue=(request.args.get('hashtag'))
+        Replyvalue=(request.args.get('msg'))
+        tag=(request.args.get('tag'))
+        id=(request.args.get('id'))
+
+        if(len(hastagvalue)!=0 and len(Replyvalue)!=0 and len(tag)!=0 and len(id)!=0 ):
+            db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
+            print("Connected to:", db_connection.get_server_info())
+            mycursor = db_connection.cursor()
+            #sql = "UPDATE hashtag_info SET hashtag_info_id="+hastagvalue+" WHERE tweet_bot_id="+ id
+            mycursor.execute("""
+   UPDATE hashtag_info
+   SET hashtag_info_id=%s, message=%s, type=%s
+   WHERE tweet_bot_id=%s
+""", (hastagvalue, Replyvalue, tag, id))
+            db_connection.commit()
+            print(mycursor.rowcount, "record updated.")
+            search=(hastagvalue)
+            numberoftweets=1000
+            for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
+                print(tweet.user.name)
+                api.update_status(status = Replyvalue, in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
+                #sleep(15)
+            return jsonpify("OK")
+        else:
+            return jsonpify("please provide valid details")
+
+    except mysql.Error as err:
+        print(err)
+        print("Error Code:", err.errno)
+        print("SQLSTATE", err.sqlstate)
+        print("Message", err.msg)
+        return jsonpify(err)
+
 @app.route("/delete", methods=['GET', 'POST'])
 def deleterec():
     try:
