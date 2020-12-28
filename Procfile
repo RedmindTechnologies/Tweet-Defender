@@ -1,2 +1,2 @@
-worker: python Dbconnection.py
+web: python Dbconnection.py
 
