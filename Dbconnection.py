@@ -8,8 +8,9 @@ from time import sleep
 import os
 import sys
 from json import loads
-from flask import Flask, render_template,request
+from flask import Flask, render_template,request,session
 from flask_jsonpify import jsonpify
+#from werkzeug import check_password_hash
 app = Flask(__name__)
 
 # enter your server IP address/domain name
@@ -307,6 +308,65 @@ def deleterec():
         print("SQLSTATE", err.sqlstate)
         print("Message", err.msg)
         return jsonpify(err)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
+    mycursor = db_connection.cursor()
+    username=str(request.args.get('username'))
+    pwd=(request.args.get('password'))
+    print(username)
+    sql = "SELECT  pwd FROM user WHERE email="+username
+    #val=str(username)
+    mycursor.execute(sql)
+    row = mycursor.fetchone()
+    print(row)
+
+    if row:
+        if pwd==row[0]:
+            return jsonpify("OK")
+        else:
+            return jsonpify("Error " )
+
+@app.route("/register", methods=['GET', 'POST'])
+def register():
+    try:
+        Name=(request.args.get('username'))
+        Email=(request.args.get('email'))
+        Pass=(request.args.get('password'))
+        Ph=(request.args.get('ph'))
+        print(Name)
+        print(Email)
+        print(Pass)
+        print(Ph)
+        if(len(Name)!=0 and len(Email)!=0 and len(Pass)!=0 and len(Ph)!=0 ):
+            db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
+            print("Connected to:", db_connection.get_server_info())
+            mycursor = db_connection.cursor()
+            sql = "INSERT INTO user (name, email,pwd,phone) VALUES (%s, %s, %s, %s)"
+            val = (Name,Email,Pass,Ph)
+            mycursor.execute(sql, val)
+            db_connection.commit()
+            print(mycursor.rowcount, "record inserted.")
+            return jsonpify("OK")
+        else:
+            return jsonpify("please enter valid")
+
+    except mysql.Error as err:
+        print(err)
+        print("Error Code:", err.errno)
+        print("SQLSTATE", err.sqlstate)
+        print("Message", err.msg)
+        return jsonpify(err)
+
+
+@app.route('/logout')
+def logout():
+	if 'username' in session:
+		session.pop('username', None)
+	return jsonpify({'message' : 'You successfully logged out'})
+
+
 
 if __name__ == '__main__':
   app.run(debug=True)
