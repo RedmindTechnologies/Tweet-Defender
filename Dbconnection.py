@@ -20,20 +20,57 @@ DATABASE = "u852023448_twitter_bot"
 USER = "u852023448_twitter_bot"
 # user password
 PASSWORD = "Admin123$"
+
 consumer_key ='eat3Qb7BDuOowxzCDgIp5dTfa'
 consumer_secret = '1DHgcDoa4EE6Z3K7Awuaq06LgvgjFfRD21Z0ZYNIqRkHDpy47f'
 access_token = '1341298822954151937-UN8peF5M0cb3mzQmtRQC6TytI9nuHo'
 access_token_secret = 'UhgEDeMpiyZrLQgk89PBI9rFhStePzokMpmuglybvPaJg'
+
+
+@app.route('/config', methods=['GET', 'POST'])
+def configure():
+
+        try:
+            consumer_key=str(request.args.get('Consumer_key'))
+            consumer_secret=str(request.args.get('Consumer_secret'))
+            access_token=str(request.args.get('Access_token'))
+            access_token_secret=str(request.args.get('Access_token_secret'))
+            Scheduler=str(request.args.get('Scheduler'))
+            status=str(request.args.get('status'))
+
+            if(len(consumer_key)!=0 and len(consumer_secret)!=0 and len(access_token)!=0 and len(access_token_secret)!=0 and len(Scheduler)!=0 and len(status)!=0 ):
+                db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
+                print("Connected to:", db_connection.get_server_info())
+                mycursor = db_connection.cursor()
+                sql = "INSERT INTO configuration_table (consumerkey, consumersecret,accesstoken,accesstokensecret,scheduletime,status) VALUES (%s, %s, %s, %s, %s, %s)"
+                val = (consumer_key,consumer_secret,access_token,access_token_secret,Scheduler,status)
+                mycursor.execute(sql, val)
+                db_connection.commit()
+                print(mycursor.rowcount, "record updated.")
+                return jsonpify("OK")
+            else:
+                return jsonpify("please provide valid details")
+
+        except mysql.Error as err:
+            print(err)
+            print("SQLSTATE", err.sqlstate)
+            print("Message", err.msg)
+            return jsonpify(err)
+
+
+
+
+
+
 # Authenticate to Twitter
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
-
 # Create API object
 api = tweepy.API(auth,wait_on_rate_limit=True,wait_on_rate_limit_notify=True)
-
 user=api.me()
-print(user.name)
 tweets=api.home_timeline(tweet_mode='extended')
+print(user.name)
+
 now = datetime.now()
 print(now)
 dt_string = now.strftime('%Y/%m/%d %H:%M:%S')
@@ -123,7 +160,7 @@ def insert():
 
 @app.route('/tweet', methods=['GET', 'POST'])
 def reply():
-    hashtag='#'+(request.args.get('hashtag'))
+    hashtag=(request.args.get('hashtag'))
     message=request.args.get('msg')
     print(hashtag)
     search=(hashtag)
@@ -139,10 +176,10 @@ def reply():
 @app.route('/dailytweet', methods=['GET', 'POST'])
 def dailytweet():
     q=[]
-    hashtag='#'+(request.args.get('hash'))
-    for tweet in tweets:
-    #print(str(tweet.id)+'-'+tweet.full_text)
-        if hashtag in tweet.full_text:
+    hashtag=(request.args.get('hash'))
+    search=(hashtag)
+    numberoftweets=1000
+    for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
             print(tweet.id)
             print('Nameid=',tweet.user.screen_name)
             print('Name=',tweet.user.name)
@@ -158,8 +195,8 @@ def dailytweet():
             print('Verified account=',tweet.user.verified)
             print('Joined=',tweet.user.created_at)
             print('Tweeted at',tweet.created_at)
-            print('Tweet Text',tweet.full_text)
-            q.append({'Name':str(tweet.user.name),'Nameid':str(tweet.user.screen_name),'Followers':str(a), 'Location':str(tweet.user.location),'description':str(tweet.user.description),'tweetcount':str(tweet.user.statuses_count),'Verifiedaccount':str(tweet.user.verified),'Tweetedat':str(tweet.created_at),'TweetText':str(tweet.full_text)})
+            print('Tweet Text',tweet.text)
+            q.append({'Name':str(tweet.user.name),'Nameid':str(tweet.user.screen_name),'Followers':str(a), 'Location':str(tweet.user.location),'description':str(tweet.user.description),'tweetcount':str(tweet.user.statuses_count),'Verifiedaccount':str(tweet.user.verified),'Tweetedat':str(tweet.created_at),'TweetText':str(tweet.text)})
             #api.update_status("my update", in_reply_to_status_id = 1341420608437977088)
             #api.update_status(status = 'my tweety', in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
             #sleep(45)
