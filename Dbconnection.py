@@ -8,7 +8,6 @@ from time import sleep
 import os
 import sys
 from json import loads
-from tamil import utf8
 from flask import Flask, render_template,request,session
 from flask_jsonpify import jsonpify
 #from werkzeug import check_password_hash
@@ -185,7 +184,12 @@ def dailytweet():
             print(tweet.id)
             print('Nameid=',tweet.user.screen_name)
             print('Name=',tweet.user.name)
-            print('followers=',tweet.user.followers_count)
+            user1=api.followers(tweet.user.name)
+            a=0
+            for u in user1:
+                #print(u.followers_count)
+                a=a+1
+            print('Followers=',a)
             print('Location=',tweet.user.location)
             print('description=',tweet.user.description)
             print('tweetcount=',tweet.user.statuses_count)
@@ -193,7 +197,7 @@ def dailytweet():
             print('Joined=',tweet.user.created_at)
             print('Tweeted at',tweet.created_at)
             print('Tweet Text',tweet.text)
-            q.append({'Name':str(tweet.user.name),'Nameid':str(tweet.user.screen_name),'Followers':str(tweet.user.followers_count), 'Location':str(tweet.user.location),'description':str(tweet.user.description),'tweetcount':str(tweet.user.statuses_count),'Verifiedaccount':str(tweet.user.verified),'Tweetedat':str(tweet.created_at),'TweetText':str(tweet.text)})
+            q.append({'Name':str(tweet.user.name),'Nameid':str(tweet.user.screen_name),'Followers':str(a), 'Location':str(tweet.user.location),'description':str(tweet.user.description),'tweetcount':str(tweet.user.statuses_count),'Verifiedaccount':str(tweet.user.verified),'Tweetedat':str(tweet.created_at),'TweetText':str(tweet.text)})
             #api.update_status("my update", in_reply_to_status_id = 1341420608437977088)
             #api.update_status(status = 'my tweety', in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
             #sleep(45)
@@ -208,8 +212,7 @@ def trends():
     trends_result = api.trends_place(2295424)
     for trend in trends_result[0]["trends"]:
         print(json.dumps(trend["name"]))
-        print(trend["tweet_volume"])
-        activetrends.append({'Trend':str(trend["name"]),'Count':str(trend["tweet_volume"])})
+        activetrends.append({'Trend':str(trend["name"])})
 
     return jsonpify(json.dumps(activetrends))
 
