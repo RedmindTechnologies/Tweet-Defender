@@ -8,6 +8,7 @@ from time import sleep
 import os
 import sys
 from json import loads
+from tamil import utf8
 from flask import Flask, render_template,request,session
 from flask_jsonpify import jsonpify
 #from werkzeug import check_password_hash
@@ -41,16 +42,16 @@ def configure():
 
             if(len(consumer_key)!=0 and len(consumer_secret)!=0 and len(access_token)!=0 and len(access_token_secret)!=0 and len(Scheduler)!=0 and len(status)!=0 ):
                 db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
-                print("Connected to:", db_connection.get_server_info())
+                #print("Connected to:", db_connection.get_server_info())
                 mycursor = db_connection.cursor()
                 sql = "INSERT INTO configuration_table (consumerkey, consumersecret,accesstoken,accesstokensecret,scheduletime,status) VALUES (%s, %s, %s, %s, %s, %s)"
                 val = (consumer_key,consumer_secret,access_token,access_token_secret,Scheduler,status)
                 mycursor.execute(sql, val)
                 db_connection.commit()
-                print(mycursor.rowcount, "record updated.")
+                #print(mycursor.rowcount, "record updated.")
                 return jsonpify("OK")
             else:
-                return jsonpify("please provide valid details")
+                return jsonpify("please provide valid detail")
 
         except mysql.Error as err:
             print(err)
@@ -81,7 +82,7 @@ print(dt_string)
 def main():
     try:
        db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
-       print("Connected to:", db_connection.get_server_info())
+       #print("Connected to:", db_connection.get_server_info())
        mycursor = db_connection.cursor()
        tr="""select tweet_bot_id,hashtag_info_id,message,status,createddate_time,type from hashtag_info""";
        username=''
@@ -106,13 +107,13 @@ def saveandtrigger():
         tag=(request.args.get('tag'))
         if(len(hastagvalue)!=0 and len(Replyvalue)!=0 and len(tag)!=0 ):
             db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
-            print("Connected to:", db_connection.get_server_info())
+            #print("Connected to:", db_connection.get_server_info())
             mycursor = db_connection.cursor()
             sql = "INSERT INTO hashtag_info (hashtag_info_id, message,createddate_time,type) VALUES (%s, %s, %s, %s)"
             val = (hastagvalue,Replyvalue,dt_string,tag)
             mycursor.execute(sql, val)
             db_connection.commit()
-            print(mycursor.rowcount, "record inserted.")
+            #print(mycursor.rowcount, "record inserted.")
             #hashtag='#'+(request.args.get('hashtag'))
             #print(hashtag)
             search=(hastagvalue)
@@ -123,11 +124,11 @@ def saveandtrigger():
                 #sleep(15)
             return jsonpify("OK")
         else:
-            return jsonpify("please enter valid")
+            return jsonpify("please enter vali")
 
     except mysql.Error as err:
         print(err)
-        print("Error Code:", err.errno)
+        #print("Error Code:", err.errno)
         print("SQLSTATE", err.sqlstate)
         print("Message", err.msg)
         return jsonpify(err)
@@ -141,7 +142,7 @@ def insert():
         tag=(request.args.get('tag'))
         if(len(hastagvalue)!=0 and len(Replyvalue)!=0 and len(tag)!=0 ):
             db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
-            print("Connected to:", db_connection.get_server_info())
+            #print("Connected to:", db_connection.get_server_info())
             mycursor = db_connection.cursor()
             sql = "INSERT INTO hashtag_info (hashtag_info_id, message,createddate_time,type) VALUES (%s, %s, %s, %s)"
             val = (hastagvalue,Replyvalue,dt_string,tag)
@@ -154,7 +155,7 @@ def insert():
 
     except mysql.Error as err:
         print(err)
-        print("Error Code:", err.errno)
+        #print("Error Code:", err.errno)
         print("SQLSTATE", err.sqlstate)
         print("Message", err.msg)
         return jsonpify(err)
@@ -184,12 +185,7 @@ def dailytweet():
             print(tweet.id)
             print('Nameid=',tweet.user.screen_name)
             print('Name=',tweet.user.name)
-            user1=api.followers(tweet.user.name)
-            a=0
-            for u in user1:
-                #print(u.followers_count)
-                a=a+1
-            print('Followers=',a)
+            print('followers=',tweet.user.followers_count)
             print('Location=',tweet.user.location)
             print('description=',tweet.user.description)
             print('tweetcount=',tweet.user.statuses_count)
@@ -197,7 +193,7 @@ def dailytweet():
             print('Joined=',tweet.user.created_at)
             print('Tweeted at',tweet.created_at)
             print('Tweet Text',tweet.text)
-            q.append({'Name':str(tweet.user.name),'Nameid':str(tweet.user.screen_name),'Followers':str(a), 'Location':str(tweet.user.location),'description':str(tweet.user.description),'tweetcount':str(tweet.user.statuses_count),'Verifiedaccount':str(tweet.user.verified),'Tweetedat':str(tweet.created_at),'TweetText':str(tweet.text)})
+            q.append({'Name':str(tweet.user.name),'Nameid':str(tweet.user.screen_name),'Followers':str(tweet.user.followers_count), 'Location':str(tweet.user.location),'description':str(tweet.user.description),'tweetcount':str(tweet.user.statuses_count),'Verifiedaccount':str(tweet.user.verified),'Tweetedat':str(tweet.created_at),'TweetText':str(tweet.text)})
             #api.update_status("my update", in_reply_to_status_id = 1341420608437977088)
             #api.update_status(status = 'my tweety', in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
             #sleep(45)
@@ -211,8 +207,9 @@ def trends():
     activetrends=[]
     trends_result = api.trends_place(2295424)
     for trend in trends_result[0]["trends"]:
-        print(json.dumps(trend["name"]))
-        activetrends.append({'Trend':str(trend["name"])})
+        #print(json.dumps(trend["name"]))
+        #print(trend["tweet_volume"])
+        activetrends.append({'Trend':str(trend["name"]),'Count':str(trend["tweet_volume"])})
 
     return jsonpify(json.dumps(activetrends))
 
@@ -226,7 +223,7 @@ def editsave():
 
         if(len(hastagvalue)!=0 and len(Replyvalue)!=0 and len(tag)!=0 and len(id)!=0 ):
             db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
-            print("Connected to:", db_connection.get_server_info())
+           # print("Connected to:", db_connection.get_server_info())
             mycursor = db_connection.cursor()
             #sql = "UPDATE hashtag_info SET hashtag_info_id="+hastagvalue+" WHERE tweet_bot_id="+ id
             mycursor.execute("""
@@ -242,7 +239,7 @@ def editsave():
 
     except mysql.Error as err:
         print(err)
-        print("Error Code:", err.errno)
+        #print("Error Code:", err.errno)
         print("SQLSTATE", err.sqlstate)
         print("Message", err.msg)
         return jsonpify(err)
@@ -257,7 +254,7 @@ def editsaveandtrigger():
 
         if(len(hastagvalue)!=0 and len(Replyvalue)!=0 and len(tag)!=0 and len(id)!=0 ):
             db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
-            print("Connected to:", db_connection.get_server_info())
+           # print("Connected to:", db_connection.get_server_info())
             mycursor = db_connection.cursor()
             #sql = "UPDATE hashtag_info SET hashtag_info_id="+hastagvalue+" WHERE tweet_bot_id="+ id
             mycursor.execute("""
@@ -279,7 +276,7 @@ def editsaveandtrigger():
 
     except mysql.Error as err:
         print(err)
-        print("Error Code:", err.errno)
+        #print("Error Code:", err.errno)
         print("SQLSTATE", err.sqlstate)
         print("Message", err.msg)
         return jsonpify(err)
