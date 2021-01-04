@@ -80,7 +80,7 @@ def configure():
             print("Message", err.msg)
             return jsonpify(err)
 
-#View Data 
+#View Data
 @app.route('/view/', methods=['GET', 'POST'])
 def view():
     try:
@@ -96,7 +96,7 @@ def view():
     except mysql.Error as err:
          return jsonpify(err)
 
-#Image Preview 
+#Image Preview
 @app.route('/preview', methods=['GET', 'POST'])
 def Preview():
     try:
@@ -104,18 +104,20 @@ def Preview():
        db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
        #print("Connected to:", db_connection.get_server_info())
        mycursor = db_connection.cursor()
-       tr="""select img from hashtag_info where tweet_bot_id="""+id;
+       tr="""select img_name from hashtag_info where tweet_bot_id="""+id;
        mycursor.execute(tr)
-       username=mycursor.fetchone()[0]
-       image = username
-       return image
+       username=mycursor.fetchall()
+       for row in username:
+        #print("* {Name}".format(Name=row['img_name']))
+        image_name=(row[0])
+        image = saved_path = os.path.join(app.config['UPLOAD_FOLDER'], image_name)
+        return image
 
     except mysql.Error as err:
          print(err)
          #print("Error Code:", err.errno)
          print("SQLSTATE", err.sqlstate)
          print("Message", err.msg)
-
 
 #Table Display data
 @app.route('/my-link/', methods=['GET', 'POST'])
@@ -133,7 +135,7 @@ def main():
 
     except mysql.Error as err:
          jsonpify(err)
-        
+
 #Save and Trigger
 @app.route("/trigger", methods=['GET', 'POST'])
 def saveandtrigger():
@@ -142,25 +144,29 @@ def saveandtrigger():
         Replyvalue=(request.args.get('msg'))
         tag=(request.args.get('tag'))
         db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
-        mycursor = db_connection.cursor()
         if(len(hastagvalue)!=0 and len(Replyvalue)!=0 and len(tag)!=0 ):
             if  request.files['file']:
+                mycursor = db_connection.cursor()
                 img = request.files['file']
                 img_name = secure_filename(img.filename)
                 saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
                 img.save(saved_path)
                 sql = "INSERT INTO hashtag_info (hashtag_info_id, message,createddate_time,type,img,img_name) VALUES (%s, %s, %s, %s,%s,%s)"
-                val = (hastagvalue,Replyvalue,dt_string,tag,(request.files['file'].read()),img_name)
+                val = (hastagvalue,Replyvalue,dt_string,tag,(img.read()),img_name)
                 mycursor.execute(sql, val)
                 db_connection.commit()
-                  #Twitter Response
+                # #Twitter Response
+                saved_path1 = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
                 search=(hastagvalue)
                 numberoftweets=1000
                 for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
                     print(tweet.user.name)
-                    upload_result = api.media_upload(saved_path)
+                    print(tweet.id)
+                    upload_result = api.media_upload(saved_path1)
                     api.update_status(status = Replyvalue, in_reply_to_status_id = tweet.id , media_ids=[upload_result.media_id],auto_populate_reply_metadata=True)
+
             else :
+                mycursor = db_connection.cursor()
                 sql = "INSERT INTO hashtag_info (hashtag_info_id, message,createddate_time,type) VALUES (%s, %s, %s, %s)"
                 val = (hastagvalue,Replyvalue,dt_string,tag)
                 mycursor.execute(sql, val)
@@ -172,8 +178,8 @@ def saveandtrigger():
                     print(tweet.user.name)
                     api.update_status(status = Replyvalue, in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
 
-          
-           
+
+
             return jsonpify("OK")
         else:
             return jsonpify("please enter valid Input")
@@ -198,6 +204,8 @@ def insert():
                 mycursor = db_connection.cursor()
                 img = request.files['file']
                 img_name = secure_filename(img.filename)
+                saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
+                img.save(saved_path)
                 sql = "INSERT INTO hashtag_info (hashtag_info_id, message,createddate_time,type,img,img_name) VALUES (%s, %s, %s, %s,%s,%s)"
                 val = (hastagvalue,Replyvalue,dt_string,tag,(request.files['file'].read()),img_name)
                 mycursor.execute(sql, val)
@@ -220,35 +228,38 @@ def insert():
 def reply():
     hashtag=(request.args.get('hashtag'))
     message=request.args.get('msg')
-    id=request.args.get('id')
+    id1=request.args.get('id')
     db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
     #print("Connected to:", db_connection.get_server_info())
     mycursor = db_connection.cursor()
-    tr="""select img,img_name from hashtag_info where tweet_bot_id="""+id;
+    tr="""select img_name from hashtag_info where tweet_bot_id="""+id1;
     mycursor.execute(tr)
-    if (mycursor):
-        username=mycursor.fetchone()[0]
-        image = username[0]
-        img_name = username[1]
-        saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
-        with open(img_name, 'wb') as file:
-            file.write(image)
-        print("Stored blob data into: ", saved_path, "\n")
-        search=(hashtag)
-        numberoftweets=1000
-        for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
-            print(tweet.user.name)
-            upload_result = api.media_upload(saved_path)
-            api.update_status(status = message, in_reply_to_status_id = tweet.id , media_ids=[upload_result.media_id],auto_populate_reply_metadata=True)
-            #api.update_status(status = message, in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
-    else :
-        print(hashtag)
-        search=(hashtag)
-        numberoftweets=1000
-        for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
-            print(tweet.user.name)
-            api.update_status(status = message, in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
-    
+    username=mycursor.fetchall()
+    for row in username:
+        #print("* {Name}".format(Name=row['img_name']))
+        #print(row[1])
+        img_name=row[0]
+        #image=row[0]
+        if ((img_name)!=None):
+            saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
+            # with open(img_name, 'wb') as file:
+            #     file.write(image)
+            # print("Stored blob data into: ", saved_path, "\n")
+            search=(hashtag)
+            numberoftweets=1000
+            for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
+                print(tweet.user.name)
+                upload_result = api.media_upload(saved_path)
+                api.update_status(status = message, in_reply_to_status_id = tweet.id , media_ids=[upload_result.media_id],auto_populate_reply_metadata=True)
+                #api.update_status(status = message, in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
+        else :
+            print(hashtag)
+            search=(hashtag)
+            numberoftweets=1000
+            for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
+                print(tweet.user.name)
+                api.update_status(status = message, in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
+
     return jsonpify("ok")
 
 #daily Tweet Display each person wise
@@ -289,24 +300,30 @@ def editsave():
                 mycursor = db_connection.cursor()
                 img = request.files['file']
                 img_name = secure_filename(img.filename)
+
                 if len(img_name)!=0 :
+                    saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
+                    img.save(saved_path)
+                    mycursor = db_connection.cursor()
                     mycursor.execute("""
                                         UPDATE hashtag_info
                                         SET hashtag_info_id=%s, message=%s, type=%s , img=%s, img_name=%s
                                         WHERE tweet_bot_id=%s
-                                        """, (hastagvalue, Replyvalue, tag, id ,(request.files['file'].read()),img_name ))
+                                        """, (hastagvalue, Replyvalue, tag, (request.files['file'].read()),img_name ,id))
                     db_connection.commit()
                 else :
+                    mycursor = db_connection.cursor()
                     mycursor.execute("""
                                     UPDATE hashtag_info
-                                    SET hashtag_info_id=%s, message=%s, type=%s 
+                                    SET hashtag_info_id=%s, message=%s, type=%s
                                     WHERE tweet_bot_id=%s
                                     """, (hastagvalue, Replyvalue, tag, id ))
                     db_connection.commit()
             else :
+                mycursor = db_connection.cursor()
                 mycursor.execute("""
                                     UPDATE hashtag_info
-                                    SET hashtag_info_id=%s, message=%s, type=%s 
+                                    SET hashtag_info_id=%s, message=%s, type=%s
                                     WHERE tweet_bot_id=%s
                                     """, (hastagvalue, Replyvalue, tag, id ))
                 db_connection.commit()
@@ -329,68 +346,61 @@ def editsaveandtrigger():
         hastagvalue=(request.args.get('hashtag'))
         Replyvalue=(request.args.get('msg'))
         tag=(request.args.get('tag'))
-        id=(request.args.get('id'))
+        id1=(request.args.get('id'))
+        print(hastagvalue)
+        print(id1)
         db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
         mycursor = db_connection.cursor()
-        if(len(hastagvalue)!=0 and len(Replyvalue)!=0 and len(tag)!=0 and len(id)!=0 ):
+        if(len(hastagvalue)!=0 and len(Replyvalue)!=0 and len(tag)!=0 and len(id1)!=0 ):
             if request.files['file']:
                 img = request.files['file']
                 print(img)
                 img_name = secure_filename(img.filename)
-                
-                if len(img_name)!=0 :
-                    saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
-                    img.save(saved_path)
-                    mycursor.execute("""
-                                        UPDATE hashtag_info
-                                        SET hashtag_info_id=%s, message=%s, type=%s,img=%s,img_name=%s
-                                        WHERE tweet_bot_id=%s
-                                        """, (hastagvalue, Replyvalue, tag, id,(request.files['file'].read()),img_name))
-                    db_connection.commit()
-                    search=(hastagvalue)
-                    numberoftweets=1000
-                    for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
-                        upload_result = api.media_upload(saved_path)
-                        print(tweet.user.name)
-                        api.update_status(status = Replyvalue, in_reply_to_status_id = tweet.id ,media_ids=[upload_result.media_id_string], auto_populate_reply_metadata=True)
+                saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
+                img.save(saved_path)
+                mycursor.execute("""
+                                UPDATE hashtag_info
+                                SET hashtag_info_id=%s, message=%s, type=%s,img=%s,img_name=%s
+                                WHERE tweet_bot_id=%s
+                                """, (hastagvalue, Replyvalue, tag,(request.files['file'].read()),img_name, id1))
+                db_connection.commit()
+                saved_path1 = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
+                search=(hastagvalue)
+                numberoftweets=1000
+                for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
+                    upload_result = api.media_upload(saved_path1)
+                    print(tweet.user.name,"here1")
+                    api.update_status(status = Replyvalue, in_reply_to_status_id = tweet.id ,media_ids=[upload_result.media_id_string], auto_populate_reply_metadata=True)
                     #sleep(15)
-                else :
-                    mycursor1 = db_connection.cursor()
-                    tr="""select img,img_name from hashtag_info where tweet_bot_id="""+id;
-                    mycursor1.execute(tr)
-                    if (mycursor1):
-                        username=mycursor.fetchone()[0]
-                        image = username[0]
-                        img_name = username[1]
-                        saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
-                        with open(img_name, 'wb') as file:
-                            file.write(image)
-                        print("Stored blob data into: ", saved_path, "\n")
-                        mycursor.execute("""
-                                        UPDATE hashtag_info
-                                        SET hashtag_info_id=%s, message=%s, type=%s
-                                        WHERE tweet_bot_id=%s
-                                        """, (hastagvalue, Replyvalue, tag, id))
-                        db_connection.commit()
-                        search=(hastagvalue)
-                        numberoftweets=1000
-                        for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
-                            upload_result = api.media_upload(saved_path)
-                            print(tweet.user.name)
-                            api.update_status(status = Replyvalue, in_reply_to_status_id = tweet.id ,media_ids=[upload_result.media_id_string], auto_populate_reply_metadata=True)
+
             else :
                 mycursor.execute("""
                                         UPDATE hashtag_info
                                         SET hashtag_info_id=%s, message=%s, type=%s
                                         WHERE tweet_bot_id=%s
-                                        """, (hastagvalue, Replyvalue, tag, id))
-                db_connection.commit()
+                                        """, (hastagvalue, Replyvalue, tag, id1))
+                # mycursor1 = db_connection.cursor()
+                # tr="""select img_name from hashtag_info where tweet_bot_id="""+id1;
+                # mycursor1.execute(tr)
+                # username=mycursor.fetchall()
+                # for row in username:
+                #     img_name=row[0]
+                #     print(img_name)
+                #     saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
+                #     search=(hastagvalue)
+                #     numberoftweets=1000
+                #     for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
+                #         upload_result = api.media_upload(saved_path)
+                #         print(tweet.user.name,"here")
+                #         api.update_status(status = Replyvalue, in_reply_to_status_id = tweet.id ,media_ids=[upload_result.media_id_string], auto_populate_reply_metadata=True)
+                    # else :
                 search=(hastagvalue)
                 numberoftweets=1000
                 for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
-                    print(tweet.user.name)
+                    print(tweet.user.name,"here2")
                     api.update_status(status = Replyvalue, in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
                     #sleep(15)
+            db_connection.commit()
             return jsonpify("OK")
         else:
             return jsonpify("please provide valid details")
@@ -451,7 +461,7 @@ def login():
         # print("Message", err.msg)
         return jsonpify(err)
 
-#Registerion 
+#Registerion
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     try:
@@ -490,6 +500,22 @@ def logout():
 		session.pop('username', None)
 	return jsonpify({'message' : 'You successfully logged out'})
 
+@app.route('/getActiveRobots', methods=['GET', 'POST'])
+def getActiveRobots():
+    try:
+       db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
+       #print("Connected to:", db_connection.get_server_info())
+       mycursor = db_connection.cursor()
+       tr="""select count(*) from hashtag_info where status='Active' """;
+       mycursor.execute(tr)
+       count=mycursor.fetchall()
+       #print (username)
+       results=jsonpify(count)
+       #print(results)
+       return results
+
+    except mysql.Error as err:
+        return jsonpify("ok")
 
 if __name__ == '__main__':
   app.run()
