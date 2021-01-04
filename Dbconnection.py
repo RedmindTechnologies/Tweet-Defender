@@ -1,3 +1,5 @@
+from flask_ngrok import run_with_ngrok
+from flask_cors import CORS
 import mysql.connector
 import mysql.connector as mysql
 import json
@@ -8,12 +10,18 @@ from time import sleep
 import os
 import sys
 from json import loads
-from tamil import utf8
-from flask import Flask, render_template,request,session
+#from tamil import utf8
+from flask import Flask, render_template,session
+from flask import  request, render_template
+from flask import send_from_directory, url_for
 from flask_jsonpify import jsonpify
+import requests
+from werkzeug.utils import secure_filename
+#import urllib.request
 #from werkzeug import check_password_hash
 app = Flask(__name__)
-
+run_with_ngrok(app)
+CORS(app)
 # enter your server IP address/domain name
 HOST = "redmindtechnologies.com" # or "domain.com"
 # database name, if you want just to connect to MySQL server, leave it empty
@@ -27,7 +35,23 @@ consumer_key ='eat3Qb7BDuOowxzCDgIp5dTfa'
 consumer_secret = '1DHgcDoa4EE6Z3K7Awuaq06LgvgjFfRD21Z0ZYNIqRkHDpy47f'
 access_token = '1341298822954151937-UN8peF5M0cb3mzQmtRQC6TytI9nuHo'
 access_token_secret = 'UhgEDeMpiyZrLQgk89PBI9rFhStePzokMpmuglybvPaJg'
+def create_new_folder(local_dir):
+    newpath = local_dir
+    if not os.path.exists(newpath):
+        os.makedirs(newpath)
+    return newpath
 
+def deletePredFolder(path):
+    files = glob.glob(path)
+    for f in files:
+        os.remove(f)
+
+
+PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
+
+UPLOAD_FOLDER =PROJECT_HOME
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/config', methods=['GET', 'POST'])
 def configure():
@@ -71,12 +95,58 @@ auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth,wait_on_rate_limit=True,wait_on_rate_limit_notify=True)
 user=api.me()
 tweets=api.home_timeline(tweet_mode='extended')
-print(user.name)
+#print(user.name)
 
 now = datetime.now()
-print(now)
+#print(now)
 dt_string = now.strftime('%Y/%m/%d %H:%M:%S')
-print(dt_string)
+#print(dt_string)
+@app.route('/view/', methods=['GET', 'POST'])
+def view():
+    try:
+       id=str(request.args.get('id'))
+       db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
+       #print("Connected to:", db_connection.get_server_info())
+       mycursor = db_connection.cursor()
+       tr="""select tweet_bot_id,hashtag_info_id,message,status,type from hashtag_info where tweet_bot_id="""+id;
+
+       mycursor.execute(tr)
+       username=mycursor.fetchall()
+       #print (username)
+
+       #print(results)
+       return jsonpify(username)
+
+    except mysql.Error as err:
+         print(err)
+         #print("Error Code:", err.errno)
+         print("SQLSTATE", err.sqlstate)
+         print("Message", err.msg)
+
+
+@app.route('/preview', methods=['GET', 'POST'])
+def Preview():
+    try:
+       id=str(request.args.get('id'))
+       db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
+       #print("Connected to:", db_connection.get_server_info())
+       mycursor = db_connection.cursor()
+       tr="""select img from hashtag_info where tweet_bot_id="""+id;
+
+       mycursor.execute(tr)
+       username=mycursor.fetchone()[0]
+       #print(username)
+       image = username
+       #print (username)
+
+       #print(results)
+       return image
+
+    except mysql.Error as err:
+         print(err)
+         #print("Error Code:", err.errno)
+         print("SQLSTATE", err.sqlstate)
+         print("Message", err.msg)
 
 @app.route('/my-link/', methods=['GET', 'POST'])
 def main():
@@ -90,7 +160,7 @@ def main():
        username=mycursor.fetchall()
        #print (username)
        results=jsonpify(username)
-       print(results)
+       #print(results)
        return results
 
     except mysql.Error as err:
@@ -106,21 +176,29 @@ def saveandtrigger():
         Replyvalue=(request.args.get('msg'))
         tag=(request.args.get('tag'))
         if(len(hastagvalue)!=0 and len(Replyvalue)!=0 and len(tag)!=0 ):
+            img = request.files['file']
+            #print(img)
+            img_name = secure_filename(img.filename)
+            saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
+            img.save(saved_path)
+            print(saved_path)
             db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
             #print("Connected to:", db_connection.get_server_info())
             mycursor = db_connection.cursor()
-            sql = "INSERT INTO hashtag_info (hashtag_info_id, message,createddate_time,type) VALUES (%s, %s, %s, %s)"
-            val = (hastagvalue,Replyvalue,dt_string,tag)
+            sql = "INSERT INTO hashtag_info (hashtag_info_id, message,createddate_time,type,img) VALUES (%s, %s, %s, %s,%s)"
+            val = (hastagvalue,Replyvalue,dt_string,tag,(request.files['file'].read()))
             mycursor.execute(sql, val)
             db_connection.commit()
+            upload_result = api.media_upload(saved_path)
+            api.update_status(status = 'my tweety', in_reply_to_status_id = '1344234543788781569' , media_ids=[upload_result.media_id_string],auto_populate_reply_metadata=True)
             #print(mycursor.rowcount, "record inserted.")
             #hashtag='#'+(request.args.get('hashtag'))
             #print(hashtag)
-            search=(hastagvalue)
-            numberoftweets=1000
-            for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
-                print(tweet.user.name)
-                api.update_status(status = Replyvalue, in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
+            #search=(hastagvalue)
+            #numberoftweets=1000
+            #for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
+             #   print(tweet.user.name)
+             #   api.update_status(status = Replyvalue, in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
                 #sleep(15)
             return jsonpify("OK")
         else:
@@ -133,6 +211,11 @@ def saveandtrigger():
         print("Message", err.msg)
         return jsonpify(err)
 
+def convert_into_binary(file_path):
+    with open(str(file_path), 'rb') as file:
+        binary = file.read()
+
+    return binary
 
 @app.route("/save", methods=['GET', 'POST'])
 def insert():
@@ -140,12 +223,18 @@ def insert():
         hastagvalue=(request.args.get('hashtag'))
         Replyvalue=(request.args.get('msg'))
         tag=(request.args.get('tag'))
+        #img=request.files['file'].read()
+        #upload_result = api.media_upload()
+        #api.update_status(status = 'my tweety', in_reply_to_status_id = '1344234543788781569' , media_ids=[upload_result.media_id_string],auto_populate_reply_metadata=True)
+        #binary_file = convert_into_binary(str(request.files['file']))
+        #data_tuple = (request.files['file'], binary_file)
+        print (request.files['file'])
         if(len(hastagvalue)!=0 and len(Replyvalue)!=0 and len(tag)!=0 ):
             db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
             #print("Connected to:", db_connection.get_server_info())
             mycursor = db_connection.cursor()
-            sql = "INSERT INTO hashtag_info (hashtag_info_id, message,createddate_time,type) VALUES (%s, %s, %s, %s)"
-            val = (hastagvalue,Replyvalue,dt_string,tag)
+            sql = "INSERT INTO hashtag_info (hashtag_info_id, message,createddate_time,type,img) VALUES (%s, %s, %s, %s,%s)"
+            val = (hastagvalue,Replyvalue,dt_string,tag,(request.files['file'].read()))
             mycursor.execute(sql, val)
             db_connection.commit()
             print(mycursor.rowcount, "record inserted.")
@@ -164,12 +253,15 @@ def insert():
 def reply():
     hashtag=(request.args.get('hashtag'))
     message=request.args.get('msg')
+    image=request.args.get('image')
     print(hashtag)
     search=(hashtag)
     numberoftweets=1000
     for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
         print(tweet.user.name)
-        api.update_status(status = message, in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
+        #upload_result = api.media_upload('')
+        #api.update_status(status = 'my tweety', in_reply_to_status_id = tweet.id , media_ids=[upload_result.media_id],auto_populate_reply_metadata=True)
+        api.update_status(status = message, in_reply_to_status_id = tweet.id ,media_ids=[upload_result.media_id], auto_populate_reply_metadata=True)
         #sleep(15)
 
     return jsonpify("ok")
@@ -182,17 +274,6 @@ def dailytweet():
     search=(hashtag)
     numberoftweets=1000
     for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
-            print(tweet.id)
-            print('Nameid=',tweet.user.screen_name)
-            print('Name=',tweet.user.name)
-            print('followers=',tweet.user.followers_count)
-            print('Location=',tweet.user.location)
-            print('description=',tweet.user.description)
-            print('tweetcount=',tweet.user.statuses_count)
-            print('Verified account=',tweet.user.verified)
-            print('Joined=',tweet.user.created_at)
-            print('Tweeted at',tweet.created_at)
-            print('Tweet Text',tweet.text)
             q.append({'Name':str(tweet.user.name),'Nameid':str(tweet.user.screen_name),'Followers':str(tweet.user.followers_count), 'Location':str(tweet.user.location),'description':str(tweet.user.description),'tweetcount':str(tweet.user.statuses_count),'Verifiedaccount':str(tweet.user.verified),'Tweetedat':str(tweet.created_at),'TweetText':str(tweet.text)})
             #api.update_status("my update", in_reply_to_status_id = 1341420608437977088)
             #api.update_status(status = 'my tweety', in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
@@ -253,22 +334,29 @@ def editsaveandtrigger():
         id=(request.args.get('id'))
 
         if(len(hastagvalue)!=0 and len(Replyvalue)!=0 and len(tag)!=0 and len(id)!=0 ):
+            img = request.files['file']
+            print(img)
+            img_name = secure_filename(img.filename)
+            saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
+            img.save(saved_path)
             db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
            # print("Connected to:", db_connection.get_server_info())
             mycursor = db_connection.cursor()
             #sql = "UPDATE hashtag_info SET hashtag_info_id="+hastagvalue+" WHERE tweet_bot_id="+ id
             mycursor.execute("""
    UPDATE hashtag_info
-   SET hashtag_info_id=%s, message=%s, type=%s
+   SET hashtag_info_id=%s, message=%s, type=%s,img=%s
    WHERE tweet_bot_id=%s
-""", (hastagvalue, Replyvalue, tag, id))
+""", (hastagvalue, Replyvalue, tag, id,(request.files['file'].read())))
             db_connection.commit()
             print(mycursor.rowcount, "record updated.")
-            search=(hastagvalue)
-            numberoftweets=1000
-            for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
-                print(tweet.user.name)
-                api.update_status(status = Replyvalue, in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
+            upload_result = api.media_upload(saved_path)
+            api.update_status(status = 'my tweety', in_reply_to_status_id = '1344234543788781569' , media_ids=[upload_result.media_id_string],auto_populate_reply_metadata=True)
+            #search=(hastagvalue)
+            #numberoftweets=1000
+            #for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
+             #   print(tweet.user.name)
+              #  api.update_status(status = Replyvalue, in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
                 #sleep(15)
             return jsonpify("OK")
         else:
@@ -364,7 +452,6 @@ def logout():
 	return jsonpify({'message' : 'You successfully logged out'})
 
 
-
 if __name__ == '__main__':
-  app.run(debug=True)
+  app.run()
 
