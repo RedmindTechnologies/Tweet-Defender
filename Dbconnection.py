@@ -31,10 +31,10 @@ USER = "u852023448_twitter_bot"
 PASSWORD = "Admin123$"
 
 # Authenticate to Twitter
-consumer_key ='eat3Qb7BDuOowxzCDgIp5dTfa'
-consumer_secret = '1DHgcDoa4EE6Z3K7Awuaq06LgvgjFfRD21Z0ZYNIqRkHDpy47f'
-access_token = '1341298822954151937-UN8peF5M0cb3mzQmtRQC6TytI9nuHo'
-access_token_secret = 'UhgEDeMpiyZrLQgk89PBI9rFhStePzokMpmuglybvPaJg'
+consumer_key ='Gc8S1SP0hKlCCeLXdxusPPnLa'
+consumer_secret = 'mmJUkd8aLlfQ6B3k3zkVWlEzpxjoa5btv3IlLsLM53weUXv9oX'
+access_token = '1341298822954151937-cidlOHMUgPVgm4vpeGN4hen3TfAUti'
+access_token_secret = '9WF5WIJVZ30Cp5OP2AxsKGdHt22uHAcpU4p7YI9X8R88g'
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
@@ -147,10 +147,10 @@ def saveandtrigger():
         if(len(hastagvalue)!=0 and len(Replyvalue)!=0 and len(tag)!=0 ):
             if  request.files['file']:
                 mycursor = db_connection.cursor()
-                #img = request.files['file']
+                img = request.files['file']
                 img_name = secure_filename(img.filename)
-                #saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
-                #img.save(saved_path)
+                saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
+                img.save(saved_path)
                 sql = "INSERT INTO hashtag_info (hashtag_info_id, message,createddate_time,type,img,img_name) VALUES (%s, %s, %s, %s,%s,%s)"
                 val = (hastagvalue,Replyvalue,dt_string,tag,(img.read()),img_name)
                 mycursor.execute(sql, val)
@@ -203,9 +203,9 @@ def insert():
             if  request.files['file']:
                 mycursor = db_connection.cursor()
                 img = request.files['file']
-                #img_name = secure_filename(img.filename)
-                #saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
-                #img.save(saved_path)
+                img_name = secure_filename(img.filename)
+                saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
+                img.save(saved_path)
                 sql = "INSERT INTO hashtag_info (hashtag_info_id, message,createddate_time,type,img,img_name) VALUES (%s, %s, %s, %s,%s,%s)"
                 val = (hastagvalue,Replyvalue,dt_string,tag,(request.files['file'].read()),img_name)
                 mycursor.execute(sql, val)
