@@ -1,5 +1,6 @@
 from flask_ngrok import run_with_ngrok
 from flask_cors import CORS
+import video_upload
 import mysql.connector
 import mysql.connector as mysql
 import json
@@ -31,6 +32,7 @@ USER = "u852023448_twitter_bot"
 PASSWORD = "Admin123$"
 
 # Authenticate to Twitter
+
 consumer_key ='Gc8S1SP0hKlCCeLXdxusPPnLa'
 consumer_secret = 'mmJUkd8aLlfQ6B3k3zkVWlEzpxjoa5btv3IlLsLM53weUXv9oX'
 access_token = '1341298822954151937-cidlOHMUgPVgm4vpeGN4hen3TfAUti'
@@ -110,7 +112,7 @@ def Preview():
        for row in username:
         #print("* {Name}".format(Name=row['img_name']))
         image_name=(row[0])
-        image = saved_path = os.path.join(app.config['UPLOAD_FOLDER'], image_name)
+        image =  os.path.join(app.config['UPLOAD_FOLDER'], image_name)
         return image
 
     except mysql.Error as err:
@@ -161,9 +163,15 @@ def saveandtrigger():
                 numberoftweets=1000
                 for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
                     print(tweet.user.name)
-                    print(tweet.id)
-                    upload_result = api.media_upload(saved_path1)
-                    api.update_status(status = Replyvalue, in_reply_to_status_id = tweet.id , media_ids=[upload_result.media_id],auto_populate_reply_metadata=True)
+                    print(tweet.user.name)
+                    msg='@'+ tweet.user.screen_name + ' '+Replyvalue
+                    print(msg)
+                    reply=tweet.id
+                    print(reply)
+                    video_upload.username1(msg,reply,img_name)
+                    #print(tweet.id)
+                    #upload_result = api.media_upload(saved_path1)
+                    #api.update_status(status = Replyvalue, in_reply_to_status_id = tweet.id , media_ids=[upload_result.media_id],auto_populate_reply_metadata=True)
 
             else :
                 mycursor = db_connection.cursor()
@@ -176,7 +184,13 @@ def saveandtrigger():
                 numberoftweets=1000
                 for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
                     print(tweet.user.name)
-                    api.update_status(status = Replyvalue, in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
+                    msg='@'+ tweet.user.screen_name + ' '+Replyvalue
+                    print(msg)
+                    reply=tweet.id
+                    print(reply)
+                    video_upload.reply1(msg,reply)
+                    #print(tweet.user.name)
+                    #api.update_status(status = Replyvalue, in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
 
 
 
@@ -249,8 +263,13 @@ def reply():
             numberoftweets=1000
             for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
                 print(tweet.user.name)
-                upload_result = api.media_upload(saved_path)
-                api.update_status(status = message, in_reply_to_status_id = tweet.id , media_ids=[upload_result.media_id],auto_populate_reply_metadata=True)
+                msg='@'+ tweet.user.screen_name + ' '+message
+                print(msg)
+                reply=tweet.id
+                print(reply)
+                video_upload.username1(msg,reply,img_name)
+                #upload_result = api.media_upload(saved_path)
+                #api.update_status(status = message, in_reply_to_status_id = tweet.id , media_ids=[upload_result.media_id],auto_populate_reply_metadata=True)
                 #api.update_status(status = message, in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
         else :
             print(hashtag)
@@ -258,7 +277,13 @@ def reply():
             numberoftweets=1000
             for tweet in tweepy.Cursor(api.search,search).items(numberoftweets):
                 print(tweet.user.name)
-                api.update_status(status = message, in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
+                msg='@'+ tweet.user.screen_name + ' '+message
+                print(msg)
+                reply=tweet.id
+                print(reply)
+                video_upload.reply1(msg,reply)
+                #print(tweet.user.name)
+                #api.update_status(status = message, in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
 
     return jsonpify("ok")
 
