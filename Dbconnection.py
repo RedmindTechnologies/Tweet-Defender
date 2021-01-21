@@ -153,8 +153,10 @@ def saveandtrigger():
                 img_name = secure_filename(img.filename)
                 saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
                 img.save(saved_path)
+                with open(saved_path, 'rb') as file:
+                   binaryData = file.read()
                 sql = "INSERT INTO hashtag_info (hashtag_info_id, message,createddate_time,type,img,img_name) VALUES (%s, %s, %s, %s,%s,%s)"
-                val = (hastagvalue,Replyvalue,dt_string,tag,(request.files['file'].read()),img_name)
+                val = (hastagvalue,Replyvalue,dt_string,tag,(binaryData),img_name)
                 mycursor.execute(sql, val)
                 db_connection.commit()
                 # #Twitter Response
@@ -331,12 +333,14 @@ def editsave():
                 if len(img_name)!=0 :
                     saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
                     img.save(saved_path)
+                    with open(saved_path, 'rb') as file:
+                        binaryData = file.read()
                     mycursor = db_connection.cursor()
                     mycursor.execute("""
                                         UPDATE hashtag_info
                                         SET hashtag_info_id=%s, message=%s, type=%s , img=%s, img_name=%s
                                         WHERE tweet_bot_id=%s
-                                        """, (hastagvalue, Replyvalue, tag, (request.files['file'].read()),img_name ,id))
+                                        """, (hastagvalue, Replyvalue, tag, (binaryData),img_name ,id))
                     db_connection.commit()
                 else :
                     mycursor = db_connection.cursor()
@@ -385,11 +389,13 @@ def editsaveandtrigger():
                 img_name = secure_filename(img.filename)
                 saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
                 img.save(saved_path)
+                with open(saved_path, 'rb') as file:
+                    binaryData = file.read()
                 mycursor.execute("""
                                 UPDATE hashtag_info
                                 SET hashtag_info_id=%s, message=%s, type=%s,img=%s,img_name=%s
                                 WHERE tweet_bot_id=%s
-                                """, (hastagvalue, Replyvalue, tag,(request.files['file'].read()),img_name, id1))
+                                """, (hastagvalue, Replyvalue, tag,(binaryData),img_name, id1))
                 db_connection.commit()
                 saved_path1 = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
                 search=(hastagvalue)
