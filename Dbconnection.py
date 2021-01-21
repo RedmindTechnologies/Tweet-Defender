@@ -220,8 +220,10 @@ def insert():
                 img_name = secure_filename(img.filename)
                 saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
                 img.save(saved_path)
+                with open(img_name, 'rb') as file:
+                    binaryData = file.read()
                 sql = "INSERT INTO hashtag_info (hashtag_info_id, message,createddate_time,type,img,img_name) VALUES (%s, %s, %s, %s,%s,%s)"
-                val = (hastagvalue,Replyvalue,dt_string,tag,(request.files['file'].chunks()),img_name)
+                val = (hastagvalue,Replyvalue,dt_string,tag,(binaryData),img_name)
                 mycursor.execute(sql, val)
             else :
                 mycursor = db_connection.cursor()
