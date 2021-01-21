@@ -112,8 +112,8 @@ def Preview():
        for row in username:
         #print("* {Name}".format(Name=row['img_name']))
         image_name=(row[0])
-        image =  os.path.join(app.config['UPLOAD_FOLDER'], image_name)
-        return image
+        #image =  os.path.join(app.config['UPLOAD_FOLDER'], image_name)
+        return image_name
 
     except mysql.Error as err:
          print(err)
