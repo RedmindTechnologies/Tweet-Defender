@@ -354,9 +354,9 @@ def editsave():
                 db_connection.commit()
                 print(mycursor.rowcount, "record updated.")
 
-            return ("OK")
+            return jsonpify("OK")
         else:
-            return ("please provide valid details")
+            return jsonpify("please provide valid details")
 
     except mysql.Error as err:
         # print(err)
