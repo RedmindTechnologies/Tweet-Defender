@@ -354,16 +354,16 @@ def editsave():
                 db_connection.commit()
                 print(mycursor.rowcount, "record updated.")
 
-            return jsonpify("OK")
+            return ("OK")
         else:
-            return jsonpify("please provide valid details")
+            return ("please provide valid details")
 
     except mysql.Error as err:
         # print(err)
         # #print("Error Code:", err.errno)
         # print("SQLSTATE", err.sqlstate)
         # print("Message", err.msg)
-        return jsonpify(err)
+        return (err)
 
 @app.route("/editandtrigger", methods=['GET', 'POST'])
 def editsaveandtrigger():
