@@ -111,9 +111,9 @@ def Preview():
        #username=mycursor.fetchall()
        #for row in username:
         #print("* {Name}".format(Name=row['img_name']))
-        image_name=mycursor.fetchone()[0]
+       image_name=mycursor.fetchone()[0]
         #image =  os.path.join(app.config['UPLOAD_FOLDER'], image_name)
-        return image_name
+       return image_name
 
     except mysql.Error as err:
          return(err)
