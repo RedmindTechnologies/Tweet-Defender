@@ -108,10 +108,10 @@ def Preview():
        mycursor = db_connection.cursor()
        tr="""select img from hashtag_info where tweet_bot_id="""+id;
        mycursor.execute(tr)
-       #username=mycursor.fetchall()
-       #for row in username:
+       username=mycursor.fetchall()
+       for row in username:
         #print("* {Name}".format(Name=row['img_name']))
-       image_name=mycursor.fetchone()[0]
+        image_name=row[0]
         #image =  os.path.join(app.config['UPLOAD_FOLDER'], image_name)
        return str(image_name)
 
