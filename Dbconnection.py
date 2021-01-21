@@ -113,7 +113,7 @@ def Preview():
         #print("* {Name}".format(Name=row['img_name']))
        image_name=mycursor.fetchone()[0]
         #image =  os.path.join(app.config['UPLOAD_FOLDER'], image_name)
-       return image_name
+       return image_name.encode('UTF-8')
 
     except mysql.Error as err:
          return(err)
