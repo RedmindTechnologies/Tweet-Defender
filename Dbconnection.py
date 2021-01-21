@@ -221,7 +221,7 @@ def insert():
                 saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
                 img.save(saved_path)
                 sql = "INSERT INTO hashtag_info (hashtag_info_id, message,createddate_time,type,img,img_name) VALUES (%s, %s, %s, %s,%s,%s)"
-                val = (hastagvalue,Replyvalue,dt_string,tag,(request.files['file'].read()),img_name)
+                val = (hastagvalue,Replyvalue,dt_string,tag,(request.files['file'].chunks()),img_name)
                 mycursor.execute(sql, val)
             else :
                 mycursor = db_connection.cursor()
