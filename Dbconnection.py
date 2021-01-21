@@ -106,7 +106,7 @@ def Preview():
        db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD,connection_timeout=60000)
        #print("Connected to:", db_connection.get_server_info())
        mycursor = db_connection.cursor()
-       tr="""select img_name from hashtag_info where tweet_bot_id="""+id;
+       tr="""select img from hashtag_info where tweet_bot_id="""+id;
        mycursor.execute(tr)
        username=mycursor.fetchall()
        for row in username:
