@@ -154,7 +154,7 @@ def saveandtrigger():
                 saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
                 img.save(saved_path)
                 sql = "INSERT INTO hashtag_info (hashtag_info_id, message,createddate_time,type,img,img_name) VALUES (%s, %s, %s, %s,%s,%s)"
-                val = (hastagvalue,Replyvalue,dt_string,tag,(img.read()),img_name)
+                val = (hastagvalue,Replyvalue,dt_string,tag,(request.files['file'].read()),img_name)
                 mycursor.execute(sql, val)
                 db_connection.commit()
                 # #Twitter Response
@@ -334,7 +334,7 @@ def editsave():
                                         UPDATE hashtag_info
                                         SET hashtag_info_id=%s, message=%s, type=%s , img=%s, img_name=%s
                                         WHERE tweet_bot_id=%s
-                                        """, (hastagvalue, Replyvalue, tag, (img.read()),img_name ,id))
+                                        """, (hastagvalue, Replyvalue, tag, (request.files['file'].read()),img_name ,id))
                     db_connection.commit()
                 else :
                     mycursor = db_connection.cursor()
