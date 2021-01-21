@@ -334,7 +334,7 @@ def editsave():
                                         UPDATE hashtag_info
                                         SET hashtag_info_id=%s, message=%s, type=%s , img=%s, img_name=%s
                                         WHERE tweet_bot_id=%s
-                                        """, (hastagvalue, Replyvalue, tag, (request.files['file'].read()),img_name ,id))
+                                        """, (hastagvalue, Replyvalue, tag, (img.read()),img_name ,id))
                     db_connection.commit()
                 else :
                     mycursor = db_connection.cursor()
@@ -544,4 +544,3 @@ def getActiveRobots():
 
 if __name__ == '__main__':
   app.run()
-
