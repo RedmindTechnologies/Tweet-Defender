@@ -108,12 +108,13 @@ def Preview():
        mycursor = db_connection.cursor()
        tr="""select img from hashtag_info where tweet_bot_id="""+id;
        mycursor.execute(tr)
-       username=mycursor.fetchall()
-       for row in username:
-        #print("* {Name}".format(Name=row['img_name']))
-        image_name=row[0]
-        #image =  os.path.join(app.config['UPLOAD_FOLDER'], image_name)
-       return str(image_name)
+       username=mycursor.fetchone()[0]
+       #print(username)
+       image = username
+       #print (username)
+
+       #print(results)
+       return image
 
     except mysql.Error as err:
          return(err)
