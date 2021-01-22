@@ -115,7 +115,7 @@ def Preview():
        #print (username)
 
        #print(results)
-       return image
+       return str(image)
 
     except mysql.Error as err:
          return(err)
