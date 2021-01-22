@@ -107,7 +107,8 @@ def Preview():
        #print("Connected to:", db_connection.get_server_info())
        mycursor = db_connection.cursor()
        tr="""select img from hashtag_info where tweet_bot_id="""+id;
-       mycursor.execute(tr)
+       mycursor.execute(tr, (id,))
+       #mycursor.execute(tr)
        username=mycursor.fetchone()[0]
        #print(username)
        image = username
