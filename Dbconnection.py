@@ -33,8 +33,8 @@ PASSWORD = "Admin123$"
 
 # Authenticate to Twitter
 
-consumer_key ='V4mQicuHqsURwOX2OInBYswm5'
-consumer_secret = 'VeIduHExpM7AMr87LMDatY8iOu7Nq0tuAQdiHJPJ3epU9wRiVQ'
+consumer_key ='M9QYvy6Bx565RoistK7i0fVYr'
+consumer_secret = 'a981IjlUYGnkw92PrEHtOtl3a7qTPZR2rEaYxaP4RyiaSk8oz5'
 access_token = '1362005227637936130-naFe3QosSQcLtIKG5r10UirEPi78e9'
 access_token_secret = 'hMiEmxYMB612w5O7hI6coViRFdjpuiqoH0H3JXVV9Mwa1'
 
