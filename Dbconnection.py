@@ -35,8 +35,8 @@ PASSWORD = "Admin123$"
 
 consumer_key ='V4mQicuHqsURwOX2OInBYswm5'
 consumer_secret = 'VeIduHExpM7AMr87LMDatY8iOu7Nq0tuAQdiHJPJ3epU9wRiVQ'
-access_token = '1362005227637936130-YmmSqwaA8ruPLPPVrbu7PzbMtHeI0y'
-access_token_secret = 'LfriqbkoYDAmNvyTUiFuEBG5jmToVkAoRz1lGu0fwOOzo'
+access_token = '1362005227637936130-naFe3QosSQcLtIKG5r10UirEPi78e9'
+access_token_secret = 'hMiEmxYMB612w5O7hI6coViRFdjpuiqoH0H3JXVV9Mwa1'
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
