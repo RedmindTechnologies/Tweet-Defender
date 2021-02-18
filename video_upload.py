@@ -12,10 +12,10 @@ MEDIA_ENDPOINT_URL = 'https://upload.twitter.com/1.1/media/upload.json'
 POST_TWEET_URL = 'https://api.twitter.com/1.1/statuses/update.json'
 
 
-consumer_key ='Gc8S1SP0hKlCCeLXdxusPPnLa'
-consumer_secret = 'mmJUkd8aLlfQ6B3k3zkVWlEzpxjoa5btv3IlLsLM53weUXv9oX'
-access_token = '1341298822954151937-cidlOHMUgPVgm4vpeGN4hen3TfAUti'
-access_token_secret = '9WF5WIJVZ30Cp5OP2AxsKGdHt22uHAcpU4p7YI9X8R88g'
+consumer_key ='ff08kr1rdRJPF95gw0J6mzIfW'
+consumer_secret = 'RCTUKReT22A9UPHlkOVB2kiouY9p66oRQzpGtEw5acEva1FhOI'
+access_token = '1362005227637936130-XqCR9aM8HPY4uV60Ft6Sj66Le72XS7'
+access_token_secret = 'KntThVz04HVWgQhi3UCo4jSve4Xbb61Ni7oGSj40EZcWo'
 
 VIDEO_FILENAME = 'vijay.jpg'
 
