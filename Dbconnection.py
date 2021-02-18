@@ -33,10 +33,10 @@ PASSWORD = "Admin123$"
 
 # Authenticate to Twitter
 
-consumer_key ='cvndaWhjxceilkqUUFYctCHcy'
-consumer_secret = 'CfCTfHn696eDNO1k1AirZ6DBjgc1tI3ValxsaErYlM1YphqP18'
-access_token = '1362005227637936130-OcXeP8WHbHJLPfHKW5f8QF7DtPPLZp'
-access_token_secret = 'y9U9vxYY4SXBUmyB8GrlMwz8dYbpzXolAz7p3AZqtBFGS'
+consumer_key ='N0ygoTFfMAgaI3FbjaGRNpZQr'
+consumer_secret = 'ERO8F3lmLAzZLvSBYRRkMkXzVkVSK0287vw6IM9m6GowzAtYCZ'
+access_token = '1362005227637936130-zZ82ZJ0o7hJCXxgkuZwZORRwiEouvP'
+access_token_secret = 'q6F5tJxUroGlyk5V11WvgKl2SivzTxEvQbbl3zdWFI1xF'
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
